@@ -12,7 +12,7 @@ def index():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files['file']
-    npy_data = np.load(file)
+    npy_data = np.load(file, allow_pickle=True)
     csv_filename = file.filename.replace('.npy', '.csv')
     csv_filepath = os.path.join('uploads', csv_filename)
     os.makedirs('uploads', exist_ok=True)
