@@ -7,16 +7,6 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # 检查是否有特定的查询参数，如果有，就显示表单，不处理POST请求
-    if request.args.get('downloaded') == 'true':
-        return '''
-            <p>文件下载完成。</p>
-            <form method="POST" enctype="multipart/form-data">
-                <input type="file" name="file">
-                <input type="submit" value="Upload">
-            </form>
-        '''
-
     if request.method == 'POST':
         file = request.files['file']
         npy_data = np.load(file)
@@ -32,12 +22,9 @@ def index():
             <script type="text/javascript">
                 window.onload = function() {
                     window.location.href = "{{ download_url }}";
-                    setTimeout(function() {
-                        window.location.href = "{{ index_url }}";
-                    }, 2000); // 5秒后重定向回主页
                 };
             </script>
-        ''', download_url=download_url, index_url=url_for('index', downloaded='true'))
+        ''', download_url=download_url)
 
     return '''
     <form method="POST" enctype="multipart/form-data">
@@ -58,7 +45,14 @@ def download(filename):
             app.logger.error("Error removing or closing downloaded file handle", error)
         return response
 
-    return send_file(csv_filepath, as_attachment=True)
+    return render_template_string('''
+        <script type="text/javascript">
+            window.onload = function() {
+                window.history.pushState({}, "", "{{ index_url }}");
+            };
+        </script>
+        {{ send_file(csv_filepath, as_attachment=True) }}
+    ''', index_url=url_for('index'), csv_filepath=csv_filepath)
 
 if __name__ == '__main__':
     app.run(debug=True)
