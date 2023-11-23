@@ -1,4 +1,7 @@
 from flask import Flask, request, send_file, render_template_string, after_this_request, url_for
+import numpy as np
+import csv
+import os
 
 app = Flask(__name__)
 
@@ -20,11 +23,11 @@ def index():
                 window.onload = function() {
                     window.location.href = "{{ download_url }}";
                     setTimeout(function() {
-                        window.location.href = "{{ index_url }}";
-                    }, 3000); // 5秒后重定向回主页
+                        window.location.reload(); // 这里刷新页面
+                    }, 5000); // 延迟5秒后刷新
                 };
             </script>
-        ''', download_url=download_url, index_url=url_for('index'))
+        ''', download_url=download_url)
 
     return '''
     <form method="POST" enctype="multipart/form-data">
