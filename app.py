@@ -1,7 +1,7 @@
-from flask import Flask, request, send_file, render_template_string, after_this_request, url_for
 import numpy as np
 import csv
 import os
+from flask import Flask, request, send_file, render_template_string, after_this_request
 
 app = Flask(__name__)
 
@@ -17,14 +17,12 @@ def index():
             writer = csv.writer(csv_file)
             writer.writerows(npy_data)
 
-        download_url = url_for('download', filename=csv_filename)
+        # 自动触发下载
+        download_url = f"/download/{csv_filename}"
         return render_template_string('''
             <script type="text/javascript">
                 window.onload = function() {
                     window.location.href = "{{ download_url }}";
-                    setTimeout(function() {
-                        window.location.reload(); // 这里刷新页面
-                    }, 5000); // 延迟5秒后刷新
                 };
             </script>
         ''', download_url=download_url)
