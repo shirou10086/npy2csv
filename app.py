@@ -21,7 +21,7 @@ def index():
                     window.location.href = "{{ download_url }}";
                     setTimeout(function() {
                         window.location.href = "{{ index_url }}";
-                    }, 5000); // 5秒后重定向回主页
+                    }, 3000); // 5秒后重定向回主页
                 };
             </script>
         ''', download_url=download_url, index_url=url_for('index'))
