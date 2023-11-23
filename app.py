@@ -7,15 +7,15 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # 检查是否有特定的查询参数，如果有，就不触发下载
+    # 检查是否有特定的查询参数，如果有，就显示表单，不处理POST请求
     if request.args.get('downloaded') == 'true':
-        return render_template_string('''
+        return '''
             <p>文件下载完成。</p>
             <form method="POST" enctype="multipart/form-data">
                 <input type="file" name="file">
                 <input type="submit" value="Upload">
             </form>
-        ''')
+        '''
 
     if request.method == 'POST':
         file = request.files['file']
