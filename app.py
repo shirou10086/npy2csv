@@ -1,58 +1,30 @@
-from flask import Flask, request, send_file, render_template_string, after_this_request, url_for
+from flask import Flask, request, send_file
 import numpy as np
 import csv
 import os
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        file = request.files['file']
-        npy_data = np.load(file)
-        csv_filename = file.filename.replace('.npy', '.csv')
-        csv_filepath = os.path.join('uploads', csv_filename)
-        os.makedirs('uploads', exist_ok=True)
-        with open(csv_filepath, 'w', newline='') as csv_file:
-            writer = csv.writer(csv_file)
-            writer.writerows(npy_data)
+    return app.send_static_file('index.html')
 
-        download_url = url_for('download', filename=csv_filename)
-        return render_template_string('''
-            <script type="text/javascript">
-                window.onload = function() {
-                    window.location.href = "{{ download_url }}";
-                };
-            </script>
-        ''', download_url=download_url)
-
-    return '''
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="file">
-        <input type="submit" value="Upload">
-    </form>
-    '''
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    file = request.files['file']
+    npy_data = np.load(file)
+    csv_filename = file.filename.replace('.npy', '.csv')
+    csv_filepath = os.path.join('uploads', csv_filename)
+    os.makedirs('uploads', exist_ok=True)
+    with open(csv_filepath, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(npy_data)
+    return '/download/' + csv_filename
 
 @app.route('/download/<filename>', methods=['GET'])
 def download(filename):
     csv_filepath = os.path.join('uploads', filename)
-
-    @after_this_request
-    def remove_file(response):
-        try:
-            os.remove(csv_filepath)
-        except Exception as error:
-            app.logger.error("Error removing or closing downloaded file handle", error)
-        return response
-
-    return render_template_string('''
-        <script type="text/javascript">
-            window.onload = function() {
-                window.history.pushState({}, "", "{{ index_url }}");
-            };
-        </script>
-        {{ send_file(csv_filepath, as_attachment=True) }}
-    ''', index_url=url_for('index'), csv_filepath=csv_filepath)
+    return send_file(csv_filepath, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
