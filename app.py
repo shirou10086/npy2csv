@@ -1,4 +1,4 @@
-from flask import Flask, request, send_file
+from flask import Flask, request, jsonify, send_file
 import numpy as np
 import csv
 import os
@@ -19,7 +19,8 @@ def upload_file():
     with open(csv_filepath, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(npy_data)
-    return '/download/' + csv_filename
+    download_link = '/download/' + csv_filename
+    return jsonify({'download_link': download_link})
 
 @app.route('/download/<filename>', methods=['GET'])
 def download(filename):

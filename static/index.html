@@ -2,6 +2,12 @@
 <html>
 <head>
     <title>Upload NPY and Download CSV</title>
+</head>
+<body>
+    <h2>Upload NPY File</h2>
+    <input type="file" id="file" name="file">
+    <button onclick="uploadFile()">Upload</button>
+
     <script>
         function uploadFile() {
             var formData = new FormData();
@@ -11,17 +17,12 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.text())
+            .then(response => response.json()) // 解析 JSON 响应
             .then(data => {
-                window.location.href = data; // Trigger download
+                window.location.href = data.download_link; // 触发下载链接
             })
             .catch(error => console.error('Error:', error));
         }
     </script>
-</head>
-<body>
-    <h2>Upload NPY File</h2>
-    <input type="file" id="file" name="file">
-    <button onclick="uploadFile()">Upload</button>
 </body>
 </html>
