@@ -1,12 +1,22 @@
+from flask import Flask, request, send_file, render_template_string, after_this_request, url_for
 import numpy as np
 import csv
 import os
-from flask import Flask, request, send_file, render_template_string, after_this_request
 
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    # 检查是否有特定的查询参数，如果有，就不触发下载
+    if request.args.get('downloaded') == 'true':
+        return render_template_string('''
+            <p>文件下载完成。</p>
+            <form method="POST" enctype="multipart/form-data">
+                <input type="file" name="file">
+                <input type="submit" value="Upload">
+            </form>
+        ''')
+
     if request.method == 'POST':
         file = request.files['file']
         npy_data = np.load(file)
@@ -17,15 +27,17 @@ def index():
             writer = csv.writer(csv_file)
             writer.writerows(npy_data)
 
-        # 自动触发下载
-        download_url = f"/download/{csv_filename}"
+        download_url = url_for('download', filename=csv_filename)
         return render_template_string('''
             <script type="text/javascript">
                 window.onload = function() {
                     window.location.href = "{{ download_url }}";
+                    setTimeout(function() {
+                        window.location.href = "{{ index_url }}";
+                    }, 2000); // 5秒后重定向回主页
                 };
             </script>
-        ''', download_url=download_url)
+        ''', download_url=download_url, index_url=url_for('index', downloaded='true'))
 
     return '''
     <form method="POST" enctype="multipart/form-data">
